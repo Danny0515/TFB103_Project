@@ -1,5 +1,6 @@
 '''
-document = https://docs.mongodb.com/drivers/pymongo/
+官方文件:連結設定 = https://docs.mongodb.com/drivers/pymongo/
+官方文件:py指令 = https://www.mongodb.com/languages/python
 youtube參考影片 = https://www.youtube.com/watch?v=VQnmcBnguPY
 pip install pymongo[srv]
 上半部是官方文件說明的內容，下半部可以直接複製 code
@@ -64,5 +65,9 @@ data = [
 collection.insert_one(data)
 # 新增多筆資料
 collection.insert_many(data)
+# 撈出所有資料 (return iterable object)
+collection.find()
 # 清空 collection
 collection.remove({})
+# 結束連線
+client.close()
