@@ -34,6 +34,9 @@ client = pymongo.MongoClient(conn_str, serverSelectionTimeoutMS=5000)
 db = client.get_database('raw_data_for_project')
 # 賦予 collection 一個變數，才可以呼叫 pymongo method
 collection = db.改成你的collection名稱
+# 查看server Info 有連線成功才會顯示
+client.server_info()
+
 '''
 各網站的 collection (就是 Justin 說的桶子)名稱如下:
 ==================
