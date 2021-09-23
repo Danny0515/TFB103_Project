@@ -27,7 +27,7 @@ except Exception:
 # ===================== 下面直接複製就可以丟資料到 mongo atlas server =====================
 import pymongo
 
-conn_str = 'mongodb+srv://tfb103_g1:qwe123456@cluster0.fcab5.mongodb.net/raw_data_for_project?retryWrites=true&w=majority'
+conn_str = 'mongodb+srv://danny:qwe123456@cluster0.er4zj.mongodb.net/raw_data_for_project?retryWrites=true&w=majority'
 client = pymongo.MongoClient(conn_str, serverSelectionTimeoutMS=5000)
 
 # 連線到 db (db名稱 = raw_data_for_project)
@@ -46,7 +46,7 @@ hotel.com = hotel
 ptt = ptt 
 =================
 '''
-# 查看 collection 內的資料筆數
+# 查詢當前 collection 內的資料筆數
 collection.count_documents({})
 
 # 輸入的資料格式參考，用 list 包 dict 就可以丟多筆
@@ -65,9 +65,13 @@ data = [
 collection.insert_one(data)
 # 新增多筆資料
 collection.insert_many(data)
-# 撈出所有資料 (return iterable object)
+# 撈出一筆資料 (可用來確認有無成功)
+collection.find_one()
+# 撈出所有資料 (return iterable)
 collection.find()
 # 清空 collection
-collection.remove({})
+collection.delete_many({})
 # 結束連線
 client.close()
+
+
