@@ -34,8 +34,8 @@ client = pymongo.MongoClient(conn_str, serverSelectionTimeoutMS=5000)
 db = client.get_database('raw_data_for_project')
 # 賦予 collection 一個變數，才可以呼叫 pymongo method
 collection = db.改成你的collection名稱
-# 查看server Info 有連線成功才會顯示
-client.server_info()
+
+# ===================== 上面直接複製就可以丟資料到 mongo atlas server =====================
 
 '''
 各網站的 collection (就是 Justin 說的桶子)名稱如下:
@@ -64,6 +64,10 @@ data = [
     }
 ]
 
+# 下面是一些基本指令參考
+
+# 查看server Info 有連線成功才會顯示
+client.server_info()
 # 新增一筆資料
 collection.insert_one(data)
 # 新增多筆資料
