@@ -26,9 +26,10 @@ except Exception:
 
 # ===================== 下面直接複製就可以丟資料到 mongo atlas server =====================
 import pymongo
+import ssl
 
 conn_str = 'mongodb+srv://danny:qwe123456@cluster0.er4zj.mongodb.net/raw_data_for_project?retryWrites=true&w=majority'
-client = pymongo.MongoClient(conn_str, serverSelectionTimeoutMS=5000)
+client = pymongo.MongoClient(conn_str, serverSelectionTimeoutMS=5000, ssl=True, ssl_cert_reqs=ssl.CERT_NONE)
 
 # 連線到 db (db名稱 = raw_data_for_project)
 db = client.get_database('raw_data_for_project')
@@ -64,7 +65,7 @@ data = [
     }
 ]
 
-# 下面是一些基本指令參考
+# =============== 下面是一些基本指令參考 ===============
 
 # 查看server Info 有連線成功才會顯示
 client.server_info()
