@@ -12,7 +12,7 @@ mongodb_id_list = list()
 emptyPage_count = 0
 
 # information for mongodb atlas
-conn_str = 'mongodb+srv://danny:qwe123456@cluster0.er4zj.mongodb.net/raw_data_for_project?retryWrites=true&w=majority'
+conn_str = 'mongodb+srv://danny:qwe123456@cluster0.er4zj.mongodb.net/raw_data_for_project?ssl=true&ssl_cert_reqs=CERT_NONE'
 client = pymongo.MongoClient(conn_str, serverSelectionTimeoutMS=5000)
 db = client.get_database('raw_data_for_project')
 collection = db.pixnet
@@ -46,19 +46,16 @@ while emptyPage_count != 20:
         json_data = json.loads(pixnet_html)
 
         for data in json_data['data']['feeds']:
-            try:
-                title = data['title']
-                author = data['display_name']
-                member_uniqid = data['member_uniqid']
-                articleUrl = data['link']
-                date = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(data['created_at']))
-                tags = data['tags']
-                hit = data['hit']
-                images_url = data['images_url']
-                reply_count = data['reply_count']
-                poi = data['poi']
-            except IndexError:
-                pass
+            title = data['title']
+            author = data['display_name']
+            member_uniqid = data['member_uniqid']
+            articleUrl = data['link']
+            date = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(data['created_at']))
+            tags = data['tags']
+            hit = data['hit']
+            images_url = data['images_url']
+            reply_count = data['reply_count']
+            poi = data['poi']
 
             # request for pixnet article page
             res_pixnetArticle = ss.get(articleUrl, headers=headers)
@@ -68,18 +65,12 @@ while emptyPage_count != 20:
             article_html = BeautifulSoup(pixnetArticle_html, 'html.parser')
 
             # get article content & imgUrl
-            try:
-                content = article_html.select('div[class="article-content"]')[0].text
-                tmpList_for_imgUrl = []
-            except IndexError:
-                pass
+            content = article_html.select('div[class="article-content"]')[0].text
+            tmpList_for_imgUrl = []
 
-            try:
-                for url in article_html.select('img'):
-                    imgUrl = url['src']
-                    tmpList_for_imgUrl.append(imgUrl)
-            except KeyError:
-                pass
+            for url in article_html.select('img'):
+                imgUrl = url['src']
+                tmpList_for_imgUrl.append(imgUrl)
 
             # set data to dict for mongodb
             tmpDict_for_mongo = {
@@ -97,7 +88,8 @@ while emptyPage_count != 20:
                 'imgUrl': tmpList_for_imgUrl
             }
             tmpData.append(tmpDict_for_mongo)
-    except MissingSchema:
+    # if the article or the page is empty
+    except (KeyError, IndexError, MissingSchema):
         pass
 
     print("finish page {}".format(page))
