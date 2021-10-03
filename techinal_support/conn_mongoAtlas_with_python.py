@@ -27,7 +27,10 @@ except Exception:
 # ===================== 下面直接複製就可以丟資料到 mongo atlas server =====================
 import pymongo
 
-conn_str = 'mongodb+srv://danny:qwe123456@cluster0.er4zj.mongodb.net/raw_data_for_project?ssl=true&ssl_cert_reqs=CERT_NONE'
+# 這個是雲端的 mongodb (不要用這個，換成教室的 server)
+# conn_str = 'mongodb+srv://danny:qwe123456@cluster0.er4zj.mongodb.net/raw_data_for_project?ssl=true&ssl_cert_reqs=CERT_NONE'
+# 教室的 server
+conn_str = "mongodb://tfb1031:qwe123456@10.2.16.174/raw_data_for_project"
 client = pymongo.MongoClient(conn_str, serverSelectionTimeoutMS=5000)
 
 # 連線到 db (db名稱 = raw_data_for_project)
@@ -47,6 +50,7 @@ hotel.com = hotel
 背包客棧 = backpackers
 低卡dcard = dcard
 ptt = ptt 
+Instagram = ig
 =================
 '''
 # 查詢當前 collection 內的資料筆數

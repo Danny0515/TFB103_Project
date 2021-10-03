@@ -11,8 +11,9 @@ tmpData = list()
 mongodb_id_list = list()
 emptyPage_count = 0
 
-# information for mongodb atlas
-conn_str = 'mongodb+srv://danny:qwe123456@cluster0.er4zj.mongodb.net/raw_data_for_project?ssl=true&ssl_cert_reqs=CERT_NONE'
+# information for mongodb atlas or local server
+# conn_str = 'mongodb+srv://danny:qwe123456@cluster0.er4zj.mongodb.net/raw_data_for_project?ssl=true&ssl_cert_reqs=CERT_NONE'
+conn_str = "mongodb://tfb1031:qwe123456@10.2.16.174/raw_data_for_project"  # local server
 client = pymongo.MongoClient(conn_str, serverSelectionTimeoutMS=5000)
 db = client.get_database('raw_data_for_project')
 collection = db.pixnet
