@@ -9,9 +9,10 @@ from requests.exceptions import MissingSchema
 
 # information for mongodb atlas or local server
 conn_str = "mongodb://tfb1031:qwe123456@10.2.16.174/raw_data_for_project"  # local server
+# conn_str = 'mongodb+srv://danny:qwe123456@cluster0.er4zj.mongodb.net/raw_data_for_project?ssl=true&ssl_cert_reqs=CERT_NONE'
 client = pymongo.MongoClient(conn_str, serverSelectionTimeoutMS=20000)
 db = client.get_database('raw_data_for_project')
-collection = db.pixnet_hotel
+collection = db.pixnet_test
 mongo_index_id = 0
 
 
@@ -27,28 +28,30 @@ headers = {
 
 
 # crawler for 3 LandingPage with different keyword
-for webTime in range(3,4):
+for webTime in range(1,4):
     emptyPage_count = 0
     tmpData = list()
     page = 1
     ss = requests.session()
     if webTime == 1:
         # keyword = '住宿'
-        url = f'https://www.pixnet.net/mainpage/api/tags/%E4%BD%8F%E5%AE%BF/feeds?page={page}&per_page=5&filter=articles&sort=latest&refer=https%3A%2F%2Fwww.pixnet.net%2F%3Futm_source%3DPIXNET%26utm_medium%3Dnavbar%26utm_term%3Dhome'
+        # url = f'https://www.pixnet.net/mainpage/api/tags/%E4%BD%8F%E5%AE%BF/feeds?page={page}&per_page=5&filter=articles&sort=latest&refer=https%3A%2F%2Fwww.pixnet.net%2F%3Futm_source%3DPIXNET%26utm_medium%3Dnavbar%26utm_term%3Dhome'
+        url = f'https://www.pixnet.net/mainpage/api/tags/%E5%8F%B0%E5%8C%97%E4%BD%8F%E5%AE%BF/feeds?page={page}&per_page=5&filter=articles&sort=latest'
     elif webTime == 2:
         # keyword = '民宿'
-        url = f'https://www.pixnet.net/mainpage/api/tags/%E6%B0%91%E5%AE%BF/feeds?page={page}&per_page=5&filter=articles&sort=latest'
+        # url = f'https://www.pixnet.net/mainpage/api/tags/%E6%B0%91%E5%AE%BF/feeds?page={page}&per_page=5&filter=articles&sort=latest'
+        url = f'https://www.pixnet.net/mainpage/api/tags/%E6%96%B0%E5%8C%97%E4%BD%8F%E5%AE%BF/feeds?page={page}&per_page=5&filter=articles&sort=latest'
     else:
         # keyword = '飯店'
-        url = f'https://www.pixnet.net/mainpage/api/tags/%E9%A3%AF%E5%BA%97/feeds?page={page}&per_page=5&filter=articles&sort=latest'
-
+        # url = f'https://www.pixnet.net/mainpage/api/tags/%E9%A3%AF%E5%BA%97/feeds?page={page}&per_page=5&filter=articles&sort=latest'
+        url = f'https://www.pixnet.net/mainpage/api/tags/%E5%AE%9C%E8%98%AD%E4%BD%8F%E5%AE%BF/feeds?page={page}&per_page=5&filter=articles&sort=latest'
 
     # crawler until empty pages = 20
     while emptyPage_count != 20:
         try:
             res_pixnet = ss.get(url, headers=headers)
         except:
-            print('url connect error, try again after 5 seconds')
+            print('Url connect error, try it again after 5 seconds')
             time.sleep(5)
             continue
         try:
@@ -102,11 +105,14 @@ for webTime in range(3,4):
         print("finish page {}".format(page))
         page += 1
         if webTime == 1:
-            url = f'https://www.pixnet.net/mainpage/api/tags/%E4%BD%8F%E5%AE%BF/feeds?page={page}&per_page=5&filter=articles&sort=latest&refer=https%3A%2F%2Fwww.pixnet.net%2F%3Futm_source%3DPIXNET%26utm_medium%3Dnavbar%26utm_term%3Dhome'
+            # url = f'https://www.pixnet.net/mainpage/api/tags/%E4%BD%8F%E5%AE%BF/feeds?page={page}&per_page=5&filter=articles&sort=latest&refer=https%3A%2F%2Fwww.pixnet.net%2F%3Futm_source%3DPIXNET%26utm_medium%3Dnavbar%26utm_term%3Dhome'
+            url = f'https://www.pixnet.net/mainpage/api/tags/%E5%8F%B0%E5%8C%97%E4%BD%8F%E5%AE%BF/feeds?page={page}&per_page=5&filter=articles&sort=latest'
         elif webTime == 2:
-            url = f'https://www.pixnet.net/mainpage/api/tags/%E6%B0%91%E5%AE%BF/feeds?page={page}&per_page=5&filter=articles&sort=latest'
+            # url = f'https://www.pixnet.net/mainpage/api/tags/%E6%B0%91%E5%AE%BF/feeds?page={page}&per_page=5&filter=articles&sort=latest'
+            url = f'https://www.pixnet.net/mainpage/api/tags/%E6%96%B0%E5%8C%97%E4%BD%8F%E5%AE%BF/feeds?page={page}&per_page=5&filter=articles&sort=latest'
         else:
-            url = f'https://www.pixnet.net/mainpage/api/tags/%E9%A3%AF%E5%BA%97/feeds?page={page}&per_page=5&filter=articles&sort=latest'
+            # url = f'https://www.pixnet.net/mainpage/api/tags/%E9%A3%AF%E5%BA%97/feeds?page={page}&per_page=5&filter=articles&sort=latest'
+            url = f'https://www.pixnet.net/mainpage/api/tags/%E5%AE%9C%E8%98%AD%E4%BD%8F%E5%AE%BF/feeds?page={page}&per_page=5&filter=articles&sort=latest'
 
         # insert data to mongodb, if there is duplicate, drop it from tmpData
         if page % 10 == 0:
