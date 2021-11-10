@@ -1,9 +1,10 @@
 '''
 使用說明:
-1. 僅供以 pandas.df 對專題用的 MySQL db 進行資料的輸出,輸入 (不得修改SQL內容)
-2. 匯入class --> from connect_MySQL import MysqlDataFrame
-3. 需要匯入packages --> pymysql, pandas, sqlalchemy, logging
-4. 建立 MysqlDataFrame 物件 --> df = MysqlDataFrame('user', 'pwd', 'db')
+#  僅供以 pandas.df 對專題用的 MySQL db 進行資料的輸出,輸入 (不得修改SQL內容)
+1. 匯入class --> from connect_MySQL import MysqlDataFrame
+2. 需要匯入packages --> pymysql, pandas, sqlalchemy.create_engine, logging
+3. 建立 MysqlDataFrame 物件 --> df = MysqlDataFrame('user', 'pwd', 'db')
+4  print(df) --> 可印出使用說明
 5. df.show_info() --> 顯示現有的 databases, tables 等資訊
 6. df.get_pandas_df("table名稱") --> 得到 pandas.df
 7. df.use_sql_query("自己輸入的SQL語法") --> 得到 pandas.df
@@ -16,7 +17,7 @@ from sqlalchemy import create_engine
 
 
 class MysqlDataFrame:
-    def __init__(self, user, pwd, db='test', ip='10.2.16.174'):
+    def __init__(self, user, pwd, db='tfb1031_project', ip='10.2.16.174'):
         self.user = user
         self.pwd = pwd
         self.db = db
