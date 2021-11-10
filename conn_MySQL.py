@@ -91,3 +91,7 @@ class MysqlDataFrame:
         except Exception as err:
             print(logging.error(str(err)))
 
+    def convert_str_to_list(self, df, column):
+        import ast
+        return df[f'{column}'].apply(lambda x: ast.literal_eval(x))
+
