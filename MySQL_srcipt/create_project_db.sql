@@ -1,64 +1,57 @@
-CREATE DATABASE IF NOT EXISTS test;
-USE test;
--- CREATE DATABASE IF NOT EXISTS tfb1031_project;
--- USE tfb1031_project;
+CREATE DATABASE IF NOT EXISTS tfb1031_project;
+USE tfb1031_project;
 
 CREATE TABLE restaurant
 (
-  res_id			VARCHAR(20) NOT NULL,
-  res_name			VARCHAR(40) NOT NULL,
-  address			VARCHAR(60),
+  res_id			INT NOT NULL,
+  res_name			VARCHAR(255) NOT NULL,
+  address			VARCHAR(255),
+  content			LONGTEXT,
   score				FLOAT,
-  price 			SMALLINT,
-  content			TEXT(65536),
+  price 			FLOAT,
   article_url		VARCHAR(255),
-  image_url			TEXT(65536),
-  tag				VARCHAR(255),
+  image_url			TEXT,
+  tag				TEXT,
   CONSTRAINT res_PK PRIMARY KEY (res_id)
 ) ENGINE = INNODB;
 
 CREATE TABLE bnb
 (
-  bnb_id			VARCHAR(20) NOT NULL,
-  bnb_name			VARCHAR(40) NOT NULL,
-  bnb_url			VARCHAR(255),
-  star				VARCHAR(60),
-  price 			SMALLINT,
-  address			VARCHAR(60),
-  origin_feature	VARCHAR(200),
+  bnb_id			INT NOT NULL,
+  bnb_name			VARCHAR(100) NOT NULL,
+  bnb_url			TEXT,
+  star				INT,
+  price 			INT,
+  address			VARCHAR(255),
+  origin_feature	TEXT,
   score				FLOAT,
-  map_url			VARCHAR(255),
-  image_url			TEXT(65536),
+  image_url			TEXT,
   city				VARCHAR(10),
-  x_coordinate		FLOAT(20),
-  y_coordinate		FLOAT(20),
+  x					FLOAT(20),
+  y					FLOAT(20),
   CONSTRAINT bnb_PK PRIMARY KEY (bnb_id)
 ) ENGINE = INNODB;
 
-CREATE TABLE bnb_author
+CREATE TABLE author_feature
 (
-  bnb_aut_id		VARCHAR(20) NOT NULL,
+  aut_id			INT NOT NULL,
   author			VARCHAR(40) NOT NULL,
-  bnb_id			VARCHAR(20),
-  tag				VARCHAR(255),
-  CONSTRAINT bnbAuthor_PK PRIMARY KEY (bnb_aut_id),
-  CONSTRAINT bnbAuthor_bnb_id_FK FOREIGN KEY (bnb_id) REFERENCES bnb (bnb_id)
+  tag				TEXT,
+  CONSTRAINT autFeature_PK PRIMARY KEY (aut_id)
 ) ENGINE = INNODB;
 
 CREATE TABLE bnb_article
 (
-  bnb_art_id		VARCHAR(20) NOT NULL,
+  bnb_art_id		INT NOT NULL,
   title				VARCHAR(225),
-  content			TEXT(65536),
+  content			LONGTEXT,
   date				DATE,
   art_url			VARCHAR(255),
-  image_url			TEXT(65536),
-  bnb_aut_id		VARCHAR(20) NOT NULL,
-  bnb_id			VARCHAR(20) NOT NULL,
+  image_url			TEXT,
+  aut_id			INT,
+  bnb_id			INT,
   CONSTRAINT bnbArticle_PK PRIMARY KEY (bnb_art_id),
-  CONSTRAINT bnbArticle_bub_aut_id_FK FOREIGN KEY (bnb_aut_id) REFERENCES bnb_author (bnb_aut_id),
-  CONSTRAINT bnbArticle_bnb_id_FK FOREIGN KEY (bnb_id) REFERENCES bnb (bnb_id)
+  CONSTRAINT bnbArticle_bub_aut_id_FK FOREIGN KEY (aut_id) REFERENCES author_feature (aut_id) ON UPDATE CASCADE ,
+  CONSTRAINT bnbArticle_bnb_id_FK FOREIGN KEY (bnb_id) REFERENCES bnb (bnb_id) ON UPDATE CASCADE 
   ) ENGINE = INNODB;
-  
-  
   

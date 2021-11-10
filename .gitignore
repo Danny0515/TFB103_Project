@@ -1,0 +1,18 @@
+# system
+__pycache__/
+.idea/
+.ipynb_checkpoints
+
+# data
+data/
+static/
+
+# other
+graphic/
+for_data_course/
+flow_chart/
+test.py
+
+# person
+crawler/crawler_taiwanstay.py
+MySQL_srcipt/test_insert_rawdata.sql

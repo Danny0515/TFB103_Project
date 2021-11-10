@@ -17,4 +17,7 @@ sql = 'select * from test;'
 df = pd.read_sql_query(sql, engine)
 
 # 將 pd.DataFrame 儲存到 MySQL 的 table (不儲存index)
-df.to_sql('mpg', engine, index=0)
+df.to_sql('mpg', engine, index=False)
+
+# 使用 SQL 語法並接收結果 --> tuple
+engine.execute('sql').fetchall()
