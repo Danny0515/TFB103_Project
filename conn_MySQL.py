@@ -9,6 +9,7 @@
 6. df.get_pandas_df("table名稱") --> 得到 pandas.df
 7. df.use_sql_query("自己輸入的SQL語法") --> 得到 pandas.df
 8. insert_pandas_df(df, "table名稱") --> 將 pandas.df 填入 MySQL
+9. convert_str_to_list(df, column名稱) --> 將 series 內的 str 轉成 list
 '''
 
 import pandas as pd
@@ -37,6 +38,7 @@ class MysqlDataFrame:
         2. Call "get_pandas_df()" to get a pd.DataFrame from MySQL table
         3. Call "use_sql_query()" to get a pd.DataFrame with customized SQL 
         4. Call "insert_pandas_df()" to insert pd.DataFrame to MySQL 
+        5. Call "convert_str_to_list()" to convert string to list, return pd.series
         '''
 
     def __create_conn(self):
