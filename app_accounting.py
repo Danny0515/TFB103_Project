@@ -1,13 +1,13 @@
 import re
 import pymysql
 from datetime import datetime
-import datetime
 import matplotlib.pyplot as plt
 import os
 import pyimgur
 import io
 from google.cloud import speech_v1p1beta1 as speech
 from pydub import AudioSegment
+from pymysql.err import IntegrityError
 
 
 # GCP key
@@ -31,6 +31,8 @@ with open('./config/imgur.txt', 'r', encoding='utf-8') as f:
 def accounting_mkdir():
     if not os.path.exists('./static/app_accounting'):
         os.mkdir('./static/app_accounting')
+    elif not os.path.exists('./static/audio'):
+        os.mkdir('./static/audio')
 
 def conn_mysql(host='localhost', user='testuser', pwd='qwe123456', db='app_accounting'):
     conn = pymysql.connect(
@@ -60,7 +62,7 @@ def speech_text_clean(rawSpeechText):
     return dict(zip(string, number))  # speechText -> {'早餐': 100, '捷運': 70,}
 
 def identify_items(user_id, speechText):
-    tmpDict = {'food':0, 'shop':0, 'live':0, 'traffic':0, 'entertain':0, 'other':0}
+    tmpDict = {'food': 0, 'shop': 0, 'live': 0, 'traffic': 0, 'entertain': 0, 'other': 0}
     if len(speechText) != 0:
         foodCost_sum = sum([speechText[key] for key in speechText.keys() if key in food_item])
         tmpDict['food'] += foodCost_sum
@@ -93,18 +95,21 @@ def identify_items(user_id, speechText):
         errorMsg = '抱歉我沒聽清楚QQ，麻煩再說一次~ 謝謝'
         return errorMsg
 
-def edit_budget(user_id, TextMessage):
+def edit_budget(user_id, user_name, TextMessage):
     conn, cursor = conn_mysql()
     if 'ex:「新增預算' not in TextMessage:
         if '新增預算' in TextMessage:
             try:
                 budget = re.findall('\d+', TextMessage)[0]
-                sql = 'UPDATE user_info SET budget = %s WHERE user_id = %s;'
-                cursor.execute(sql, (budget, user_id))
+                # sql = 'UPDATE user_info SET budget = %s WHERE user_id = %s;'
+                sql = 'INSERT INTO user_info VALUES(%s, %s, %s);'
+                cursor.execute(sql, (user_id, user_name, budget))
                 close_conn_mysql(conn, cursor)
                 return f'新增成功，目前預算:\n{budget}'
             except IndexError:
                 return '輸入格式ex:「新增預算100000」'
+            except pymysql.err.IntegrityError:
+                return '已有設定預算\n要修改請輸入\nex:「修改預算50000」'
         elif '修改預算' in TextMessage:
             try:
                 budget = re.findall('\d+', TextMessage)[0]
@@ -118,7 +123,7 @@ def edit_budget(user_id, TextMessage):
             sql = 'UPDATE user_info SET budget = %s WHERE user_id = %s;'
             cursor.execute(sql, (0, user_id))
             close_conn_mysql(conn, cursor)
-            return '已刪除預算，記得輸入新預算，才能幫你算錢喔~'
+            return '已刪除預算，記得輸入新預算，\n才能幫你算錢喔~'
         elif '查看預算' in TextMessage:
             sql = 'SELECT budget FROM user_info WHERE user_id = %s;'
             cursor.execute(sql, (user_id))
@@ -136,9 +141,14 @@ def query_budget(user_id):
     budget = cursor.fetchall()[0][0]
     sql_balance = f'SELECT sum(cost) FROM user_cost WHERE user_id = "{user_id}";'
     cursor.execute(sql_balance)
-    balance = budget - cursor.fetchall()[0][0]
-    close_conn_mysql(conn, cursor)
-    return budget, balance
+    if cursor.fetchall()[0][0] is None:
+        balance = 0
+        close_conn_mysql(conn, cursor)
+        return budget, balance
+    else:
+        balance = budget - cursor.fetchall()[0][0]
+        close_conn_mysql(conn, cursor)
+        return budget, balance
 
 # Return msg before insert sql
 # In case of spending too much time on querying
@@ -146,8 +156,12 @@ def response_user(user_id, speechText):
     if len(speechText) != 0:
         totalCost = sum([number for number in speechText.values()])
         budget, balance = query_budget(user_id)
-        new_balance = budget - balance
-        return f'本次花費:{totalCost}\n目前餘額:{new_balance}\n總預算:{budget}'
+        if balance == 0:
+            new_balance = budget - totalCost
+            return f'本次花費:{totalCost}\n目前餘額:{new_balance}\n總預算:{budget}'
+        else:
+            new_balance = budget - balance
+            return f'本次花費:{totalCost}\n目前餘額:{new_balance}\n總預算:{budget}'
     else:
         errorMsg = '抱歉我沒聽清楚QQ，麻煩再說一次~\n謝謝'
         return errorMsg
@@ -171,7 +185,7 @@ def clean_budget(user_id):
     close_conn_mysql(conn, cursor)
     return '所有花費紀錄已刪除'
 
-# Show pie chart
+# Show pie chart, bar chart
 def accounting_statistics(user_id):
     budget, balance = query_budget(user_id)
     conn, cursor = conn_mysql()
@@ -206,12 +220,7 @@ def accounting_statistics(user_id):
     otherCost = cursor.fetchall()[0][0]
     if otherCost is None: otherCost = 0
     totalCost = sum([foodCost, shopCost, liveCost, trafficCost, entCost, otherCost])
-    print(foodCost)
-    print(shopCost)
-    print(liveCost)
-    print(trafficCost)
-    print(entCost)
-    print(otherCost)
+
     # Pie chart for all items cost
     fig = plt.figure(figsize=(7, 7))
     plt.pie(
@@ -222,7 +231,7 @@ def accounting_statistics(user_id):
         colors=['palegoldenrod', 'burlywood', 'peru', 'chocolate', 'sienna', 'rosybrown'],
         autopct='%1.1f%%',
         normalize=False
-    );
+        );
     plt.savefig(f'./static/app_accounting/pic_{user_id}.jpg')
     # Bar chart for budget
     if totalCost > budget:
@@ -234,7 +243,7 @@ def accounting_statistics(user_id):
         height=[totalCost, budget],
         x=['already cost', 'budget'],
         color=[f'{bar_color}', 'powderblue']
-    );
+        );
     plt.savefig(f'./static/app_accounting/bar_{user_id}.jpg')
     close_conn_mysql(conn, cursor)
     return foodCost, shopCost, liveCost, trafficCost, entCost, otherCost, totalCost
