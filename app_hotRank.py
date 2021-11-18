@@ -44,7 +44,7 @@ def get_top5_url(top5):
 def get_hotRank_button():
     top5 = get_top5_hotel()        # top5 = [hotel_1, hotel_2, hotel_3, hotel_4, hotel_5]
     top5_url = get_top5_url(top5)  # url = [url_1, url_2, url_3, url_4, url_5]
-    button = json.load(open('./card/card_hotRank_button.json', 'r', encoding='utf-8'))
+    button = json.load(open('./line_bot_card/card_hotRank_button.json', 'r', encoding='utf-8'))
     for i in range(0, 5):
         button['footer']['contents'][i]['action']['label'] = top5[i]
         button['footer']['contents'][i]['action']['uri'] = top5_url[i]
