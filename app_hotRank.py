@@ -37,7 +37,8 @@ def get_top5_url(top5):
         try:
             tmpList.append(cursor.fetchall()[0][0])
         except IndexError:
-            tmpList.append('https://tw.hotels.com/')
+            # If url is empty, return home page
+            tmpList.append('https://www.booking.com/index.zh-tw.html')
     close_conn_mysql(conn, cursor)
     return tmpList
 
