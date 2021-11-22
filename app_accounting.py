@@ -1,3 +1,11 @@
+'''
+pip install --upgrade google-cloud-speech
+pip install matplotlib
+pip install pydub
+pip install pyimgur
+pip install pymysql
+pip install matplotlib
+'''
 import re
 import pymysql
 from datetime import datetime
@@ -7,7 +15,6 @@ import pyimgur
 import io
 from google.cloud import speech_v1p1beta1 as speech
 from pydub import AudioSegment
-from pymysql.err import IntegrityError
 
 
 # GCP key
@@ -29,10 +36,10 @@ with open('./config/imgur.txt', 'r', encoding='utf-8') as f:
 
 # Create a directory to save image
 def accounting_mkdir():
-    if not os.path.exists('./static/app_accounting'):
-        os.mkdir('./static/app_accounting')
-    elif not os.path.exists('./static/audio'):
-        os.mkdir('./static/audio')
+    if not os.path.isdir('./static/app_accounting'):
+        os.makedirs('./static/app_accounting')
+    if not os.path.isdir('./static/audio'):
+        os.makedirs('./static/audio')
 
 def conn_mysql(host='localhost', user='testuser', pwd='qwe123456', db='app_accounting'):
     conn = pymysql.connect(
@@ -139,14 +146,15 @@ def query_budget(user_id):
     sql_budget = f'SELECT budget FROM user_info WHERE user_id = "{user_id}";'
     cursor.execute(sql_budget)
     budget = cursor.fetchall()[0][0]
+    print(cursor.fetchall()[0][0])
     sql_balance = f'SELECT sum(cost) FROM user_cost WHERE user_id = "{user_id}";'
     cursor.execute(sql_balance)
-    if cursor.fetchall()[0][0] is None:
-        balance = 0
+    try:
+        balance = budget - cursor.fetchall()[0][0]
         close_conn_mysql(conn, cursor)
         return budget, balance
-    else:
-        balance = budget - cursor.fetchall()[0][0]
+    except IndexError:
+        balance = 0
         close_conn_mysql(conn, cursor)
         return budget, balance
 
@@ -193,32 +201,38 @@ def accounting_statistics(user_id):
     sql_food = f'SELECT sum(cost) FROM user_cost WHERE user_id = %s and item = %s;'
     cursor.execute(sql_food, (user_id, 'food'))
     foodCost = cursor.fetchall()[0][0]
-    if foodCost is None: foodCost = 0
+    if foodCost is None:
+        foodCost = 0
 
     sql_shop = f'SELECT sum(cost) FROM user_cost WHERE user_id = %s and item = %s;'
     cursor.execute(sql_shop, (user_id, 'shop'))
     shopCost = cursor.fetchall()[0][0]
-    if shopCost is None: shopCost = 0
+    if shopCost is None:
+        shopCost = 0
 
     sql_live = f'SELECT sum(cost) FROM user_cost WHERE user_id = %s and item = %s;'
     cursor.execute(sql_live, (user_id, 'live'))
     liveCost = cursor.fetchall()[0][0]
-    if liveCost is None: liveCost = 0
+    if liveCost is None:
+        liveCost = 0
 
     sql_traffic = f'SELECT sum(cost) FROM user_cost WHERE user_id = %s and item = %s;'
     cursor.execute(sql_traffic, (user_id, 'traffic'))
     trafficCost = cursor.fetchall()[0][0]
-    if trafficCost is None: trafficCost = 0
+    if trafficCost is None:
+        trafficCost = 0
 
     sql_ent = f'SELECT sum(cost) FROM user_cost WHERE user_id = %s and item = %s;'
     cursor.execute(sql_ent, (user_id, 'entertain'))
     entCost = cursor.fetchall()[0][0]
-    if entCost is None: entCost = 0
+    if entCost is None:
+        entCost = 0
 
     sql_other = f'SELECT sum(cost) FROM user_cost WHERE user_id = %s and item = %s;'
     cursor.execute(sql_other, (user_id, 'other'))
     otherCost = cursor.fetchall()[0][0]
-    if otherCost is None: otherCost = 0
+    if otherCost is None:
+        otherCost = 0
     totalCost = sum([foodCost, shopCost, liveCost, trafficCost, entCost, otherCost])
 
     # Pie chart for all items cost
