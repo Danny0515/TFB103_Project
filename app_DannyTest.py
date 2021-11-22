@@ -1,15 +1,21 @@
 from flask import Flask, request, abort
+import configparser
 from linebot import LineBotApi, WebhookHandler
+from datetime import datetime
 from linebot.exceptions import InvalidSignatureError
 from linebot.models import (
     MessageEvent, TextMessage, TextSendMessage, AudioMessage, ImageSendMessage,
     ConfirmTemplate, TemplateSendMessage, MessageTemplateAction,
     StickerSendMessage, ButtonsTemplate, CarouselTemplate,
     ImageCarouselColumn, URITemplateAction, CarouselColumn,
-    PostbackTemplateAction)
-import configparser
+    PostbackTemplateAction, PostbackEvent, FlexSendMessage,
+    ButtonComponent)
+from urllib.parse import parse_qsl
 from app_accounting import *
-from app_main_RS import *
+from app_mainRS import *
+from app_hotRank import *
+from app_resQuery import *
+
 
 app = Flask(__name__)
 
@@ -30,6 +36,23 @@ def callback():
     except InvalidSignatureError:
         abort(400)
     return 'OK'
+
+# Postback
+@handler.add(PostbackEvent)
+def main_postback(event):
+    post_content = event.postback.data
+    user_id = event.source.user_id
+    user_id = 'U8a6e3915313149a9d5b445862b79725a'  # 測試完這行要拿掉
+    #  測試用，把 if pass 這段刪除，從 elif 開始合併
+    if False:
+        pass
+    elif post_content == 'like':
+        print('like')
+        # kafka_producer('tfb103_project', user_id,)
+    elif post_content == 'unlike':
+        print('unlike')
+    elif post_content == 'findMore':
+        print('findMore')
 
 # Speech accounting function
 @handler.add(MessageEvent, message=AudioMessage)
@@ -60,17 +83,23 @@ def accounting_main(event):
             TextSendMessage('請先新增預算才能幫你算錢喔~\nex: 新增預算30000')
             )
 
-# Text Message 條件都設定在這
+# Text Message
 @handler.add(MessageEvent, message=TextMessage)
-def main(event):
+def main_text(event):
     user_id = event.source.user_id
     user_name = line_bot_api.get_profile(user_id).display_name
     text_content = event.message.text
-    # Main recommended system
-    if text_content == '@住宿推薦':
+    user_id = 'U8a6e3915313149a9d5b445862b79725a'  # 測試完這行要拿掉
+    #  測試用，把 if pass 這段刪除，從 elif 開始合併
+    if False:
         pass
-        # main_rs_first(event)
-    # Accounting
+    # app_mainRS
+    elif text_content == '@住宿推薦':
+        msg1 = first_button_big(user_id)
+        msg2 = first_button_little(user_id)
+        line_bot_api.reply_message(event.reply_token, [FlexSendMessage('住宿推薦', msg1),
+                                                       FlexSendMessage('住宿推薦', msg2)])
+    # app_accounting
     elif text_content == '@語音記帳':
         accounting_show_statistics(event)
     elif text_content == '@計算中稍等一下喔~':
@@ -81,14 +110,21 @@ def main(event):
         accounting_show_statistics(event)
     elif '@確認刪除花費' in text_content:
         accounting_show_statistics(event)
+    # app_hotRank
+    elif text_content == '@住宿排名':
+        msg = get_hotRank_button()
+        line_bot_api.reply_message(event.reply_token, FlexSendMessage('住宿排名', msg))
+    # app_resQuery
+    elif text_content == '@餐廳快搜':
+        area = '新莊區'  # Only for test
+        msg = get_restaurant_query_button(area)
+        line_bot_api.reply_message(event.reply_token, FlexSendMessage('餐廳快搜', msg))
     # Test
-    elif '@測試Kafka' == text_content:
+    elif '@測試' == text_content:
         test(event)
     elif '@producer' in text_content:
-        conn_kafka()
         choiceLog = text_content.strip('@producer')
-        print(choiceLog)
-        kafka_producer_main_rs('ak03.test', user_id, choiceLog)
+        kafka_producer_main_rs('pro_test1', user_id, choiceLog)
 
 
 def main_rs_first(event):
@@ -188,7 +224,7 @@ def accounting_show_statistics(event):
                     StickerSendMessage(package_id='1070', sticker_id='17871')])
     elif '預算' in text_content:
         msg = edit_budget(user_id, user_name, text_content)
-        line_bot_api.reply_message(event.reply_token,TextSendMessage(msg))
+        line_bot_api.reply_message(event.reply_token, TextSendMessage(msg))
     elif text_content == '刪除花費':
         accounting_clean_check(event)
     elif '@確認刪除花費' in text_content:
@@ -211,7 +247,7 @@ def accounting_button(event):
                 actions=[
                     MessageTemplateAction(
                         label='開始使用',
-                        text=welcome_msg
+                        text=welcome_msg,
                     ),
                     MessageTemplateAction(
                         label='即時統計',
@@ -259,9 +295,14 @@ def test(event):
             title='歡迎使用語音記帳',
             text='請選擇：',
             actions=[
-                MessageTemplateAction(
-                    label='開始使用',
-                    text=f'@producer{hotelName}'
+                PostbackTemplateAction(
+                    label='@住宿排名',
+                    data=f'@住宿排名'
+                ),
+                PostbackTemplateAction(
+                    label='@餐廳快搜',
+                    data='@餐廳快搜'
+
                 )
             ]
         )
