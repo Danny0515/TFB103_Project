@@ -1,15 +1,11 @@
-import configparser
-from linebot import LineBotApi, WebhookHandler
-from datetime import datetime
-import pandas as pd
 import json
+import os
 from app_accounting import conn_mysql, close_conn_mysql
 
 
-config = configparser.ConfigParser()
-config.read('./config/config.ini')
-line_bot_api = LineBotApi(config.get('line-bot', 'channel_access_token'))
-handler = WebhookHandler(config.get('line-bot', 'channel_secret'))
+def resQuery_mkdir():
+    if not os.path.isdir('./line_bot_card'):
+        os.makedirs('./line_bot_card')
 
 def get_restaurant(area):
     conn, cursor = conn_mysql(host='localhost', user='testuser', pwd='qwe123456', db='tfb1031_project')
@@ -25,6 +21,7 @@ def get_restaurant(area):
     return restaurant_dict
 
 def get_restaurant_query_button(area):
+    resQuery_mkdir()
     button = json.load(open('./line_bot_card/card_restQuery_button.json', 'r', encoding='utf-8'))
     restaurant_dict = get_restaurant(area)
     for i, restaurant in enumerate(restaurant_dict.items()):
